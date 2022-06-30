@@ -447,16 +447,25 @@ export const BottomSheet = React.forwardRef<
     [send]
   )
 
+  const startEvent = useRef(null)
+
   useEffect(() => {
     const elem = scrollRef.current
 
     const preventScrolling = e => {
       if (preventScrollingRef.current) {
+        if (startEvent.current) {
+          const horizontalMoveDelta = e.touches?.[0].pageY - startEvent.current.touches?.[0].pageY
+          if (Math.abs(horizontalMoveDelta) < 2) {
+            return
+          }
+        }
         e.preventDefault()
       }
     }
 
     const preventSafariOverscroll = e => {
+      resetStartEvent()
       if (elem.scrollTop < 0) {
         requestAnimationFrame(() => {
           elem.style.overflow = 'hidden'
@@ -467,15 +476,21 @@ export const BottomSheet = React.forwardRef<
       }
     }
 
+    const resetStartEvent = () => {
+      startEvent.current = null
+    }
+
     if (expandOnContentDrag) {
       elem.addEventListener('scroll', preventScrolling)
       elem.addEventListener('touchmove', preventScrolling)
       elem.addEventListener('touchstart', preventSafariOverscroll)
+      elem.addEventListener('touchend', resetStartEvent)
     }
     return () => {
       elem.removeEventListener('scroll', preventScrolling)
       elem.removeEventListener('touchmove', preventScrolling)
       elem.removeEventListener('touchstart', preventSafariOverscroll)
+      elem.removeEventListener('touchend', resetStartEvent)
     }
   }, [expandOnContentDrag, scrollRef])
 
