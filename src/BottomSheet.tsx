@@ -465,7 +465,7 @@ export const BottomSheet = React.forwardRef<
     }
 
     const preventSafariOverscroll = e => {
-      resetStartEvent()
+      startEvent.current = e
       if (elem.scrollTop < 0) {
         requestAnimationFrame(() => {
           elem.style.overflow = 'hidden'
